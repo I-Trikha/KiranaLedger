@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kirana Credit Ledger</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f3; color: #1a1a18; min-height: 100vh; }
+:root {
+  --bg: #ffffff; --bg2: #f5f5f3; --bg3: #ebebea;
+  --text: #1a1a18; --text2: #666660; --text3: #999990;
+  --border: rgba(0,0,0,0.12); --border2: rgba(0,0,0,0.22);
+  --green: #1D9E75; --green-bg: #E1F5EE; --green-dark: #0F6E56;
+  --red: #E24B4A; --red-bg: #FCEBEB; --red-dark: #A32D2D;
+  --orange-bg: #FAECE7; --orange-border: #F0997B; --orange-text: #4A1B0C; --orange-sub: #993C1D;
+  --radius: 8px; --radius-lg: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1e1e1c; --bg2: #141412; --bg3: #2a2a28;
+    --text: #f0f0ee; --text2: #aaaaaa; --text3: #666660;
+    --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
+    --green-bg: #04342C; --green-dark: #9FE1CB;
+    --red-bg: #501313; --red-dark: #F7C1C1;
+    --orange-bg: #4A1B0C; --orange-border: #993C1D; --orange-text: #F5C4B3; --orange-sub: #F0997B;
+  }
+}
+.app { max-width: 720px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+.header { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+.shop-icon { width: 44px; height: 44px; border-radius: var(--radius); background: var(--green-bg); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--green); }
+.header h1 { font-size: 22px; font-weight: 600; color: var(--text); }
+.header p { font-size: 13px; color: var(--text2); }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.5rem; }
+.stat { background: var(--bg); border-radius: var(--radius); padding: 12px 14px; border: 0.5px solid var(--border); }
+.stat .label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+.stat .val { font-size: 20px; font-weight: 600; color: var(--text); }
+.stat .val.danger { color: var(--red); }
+.stat .val.success { color: var(--green); }
+.tabs { display: flex; gap: 0; margin-bottom: 1rem; border-bottom: 1px solid var(--border); }
+.tab { padding: 9px 16px; font-size: 14px; cursor: pointer; border: none; background: none; color: var(--text2); border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: inherit; transition: color 0.15s; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+.section { display: none; }
+.section.active { display: block; }
+.card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-row.three { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group label { font-size: 12px; color: var(--text2); font-weight: 500; }
+input, select, textarea {
+  width: 100%; padding: 8px 10px; font-size: 14px;
+  border: 0.5px solid var(--border2); border-radius: var(--radius);
+  background: var(--bg); color: var(--text); font-family: inherit;
+  transition: border-color 0.15s;
+}
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(29,158,117,0.12); }
+.btn { padding: 8px 16px; border-radius: var(--radius); border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); font-size: 14px; cursor: pointer; font-family: inherit; transition: background 0.12s; }
+.btn:hover { background: var(--bg3); }
+.btn.primary { background: var(--green); border-color: var(--green); color: white; font-weight: 500; }
+.btn.primary:hover { background: var(--green-dark); }
+.btn.sm { padding: 5px 10px; font-size: 12px; }
+.customer-list { display: flex; flex-direction: column; gap: 6px; }
+.customer-item { display: flex; align-items: center; padding: 12px 14px; background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+.customer-item:hover { border-color: var(--border2); background: var(--bg2); }
+.customer-item.selected { border-color: var(--green); }
+.avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--green-bg); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: var(--green); flex-shrink: 0; }
+.cust-info { flex: 1; margin-left: 10px; }
+.cust-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.cust-meta { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.balance-badge { font-size: 13px; font-weight: 500; padding: 3px 10px; border-radius: 20px; white-space: nowrap; }
+.balance-badge.owed { background: var(--red-bg); color: var(--red-dark); }
+.balance-badge.clear { background: var(--green-bg); color: var(--green-dark); }
+.txn-list { display: flex; flex-direction: column; gap: 6px; }
+.txn-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius); border: 0.5px solid var(--border); font-size: 13px; }
+.txn-item.credit { border-left: 3px solid var(--red); }
+.txn-item.payment { border-left: 3px solid var(--green); }
+.txn-left { display: flex; flex-direction: column; gap: 2px; }
+.txn-type { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.txn-type.credit { color: var(--red-dark); }
+.txn-type.payment { color: var(--green-dark); }
+.txn-desc { color: var(--text2); font-size: 12px; }
+.txn-date { font-size: 11px; color: var(--text3); }
+.txn-amount { font-size: 15px; font-weight: 600; }
+.txn-amount.credit { color: var(--red); }
+.txn-amount.payment { color: var(--green); }
+.search-bar { margin-bottom: 12px; position: relative; }
+.search-bar input { padding-left: 36px; }
+.search-bar i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; pointer-events: none; }
+.empty { text-align: center; padding: 2rem 1rem; color: var(--text2); font-size: 14px; }
+.empty i { font-size: 32px; display: block; margin-bottom: 8px; }
+.section-title { font-size: 15px; font-weight: 500; margin-bottom: 12px; color: var(--text); }
+.overdue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: var(--radius); background: var(--orange-bg); border: 0.5px solid var(--orange-border); margin-bottom: 6px; }
+.overdue-name { font-size: 13px; font-weight: 500; color: var(--orange-text); }
+.overdue-days { font-size: 11px; color: var(--orange-sub); margin-top: 2px; }
+.overdue-amt { font-size: 15px; font-weight: 600; color: var(--orange-sub); }
+.sql-area { font-family: 'Courier New', monospace; font-size: 13px; background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 10px; width: 100%; min-height: 90px; color: var(--text); margin-bottom: 8px; resize: vertical; line-height: 1.5; }
+.sql-result { font-family: 'Courier New', monospace; font-size: 12px; background: var(--bg2); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 10px; overflow-x: auto; color: var(--text); max-height: 220px; overflow-y: auto; }
+.sql-result table { border-collapse: collapse; width: 100%; }
+.sql-result th { font-size: 11px; font-weight: 600; color: var(--text2); padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.sql-result td { padding: 5px 8px; border-bottom: 0.5px solid var(--border); }
+.flex-between { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.cust-detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
+.cust-detail-header .avatar { width: 46px; height: 46px; font-size: 16px; }
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: var(--radius); font-size: 14px; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 200; }
+.toast.show { opacity: 1; }
+.schema-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 12px; font-family: 'Courier New', monospace; font-size: 12px; white-space: pre; overflow-x: auto; color: var(--text); line-height: 1.6; }
+.pill-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="shop-icon"><i class="ti ti-building-store"></i></div>
+    <div>
+      <h1>Kirana Credit Ledger</h1>
+      <p>Manage customer credit (udhaari) digitally</p>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="label">Total outstanding</div><div class="val danger" id="stat-total">₹0</div></div>
+    <div class="stat"><div class="label">Customers on credit</div><div class="val" id="stat-customers">0</div></div>
+    <div class="stat"><div class="label">Recovered this month</div><div class="val success" id="stat-recovered">₹0</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('customers')">Customers</button>
+    <button class="tab" onclick="switchTab('add-txn')">Add entry</button>
+    <button class="tab" onclick="switchTab('alerts')">Overdue alerts</button>
+    <button class="tab" onclick="switchTab('sql')">SQL console</button>
+  </div>
+
+  <!-- CUSTOMERS TAB -->
+  <div id="tab-customers" class="section active">
+    <div class="search-bar">
+      <i class="ti ti-search"></i>
+      <input type="text" placeholder="Search by name or phone..." oninput="filterCustomers(this.value)" />
+    </div>
+    <div class="flex-between">
+      <span class="section-title" style="margin-bottom:0">All customers</span>
+      <button class="btn sm primary" onclick="switchTab('add-txn')"><i class="ti ti-user-plus"></i> Add customer</button>
+    </div>
+    <div class="customer-list" id="customer-list"></div>
+
+    <div id="customer-detail" style="display:none; margin-top:1rem;">
+      <div class="card">
+        <div class="cust-detail-header">
+          <div class="avatar" id="detail-avatar"></div>
+          <div style="flex:1">
+            <div style="font-size:17px;font-weight:600;" id="detail-name"></div>
+            <div style="font-size:13px;color:var(--text2);" id="detail-phone"></div>
+            <div style="font-size:12px;color:var(--text3);" id="detail-addr"></div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:12px;color:var(--text2);">Balance</div>
+            <div style="font-size:22px;font-weight:600;" id="detail-balance"></div>
+            <button class="btn sm primary" style="margin-top:6px" onclick="quickPayment()">Record payment</button>
+          </div>
+        </div>
+        <div style="border-top:0.5px solid var(--border);padding-top:12px;">
+          <div class="section-title">Transaction history</div>
+          <div class="txn-list" id="txn-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD ENTRY TAB -->
+  <div id="tab-add-txn" class="section">
+    <div class="card">
+      <div class="section-title">Add new customer</div>
+      <div class="form-row">
+        <div class="form-group"><label>Full name *</label><input type="text" id="new-cust-name" placeholder="Ramesh Kumar" /></div>
+        <div class="form-group"><label>Phone number</label><input type="text" id="new-cust-phone" placeholder="9876543210" /></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Address</label><input type="text" id="new-cust-addr" placeholder="House no, street, locality" /></div>
+      <button class="btn primary" onclick="addCustomer()"><i class="ti ti-user-plus"></i> Add customer</button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Record a transaction</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Customer *</label>
+          <select id="txn-customer"><option value="">Select customer</option></select>
+        </div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select id="txn-type">
+            <option value="credit">Credit (udhaari diya)</option>
+            <option value="payment">Payment received</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row three">
+        <div class="form-group"><label>Amount (₹) *</label><input type="number" id="txn-amount" placeholder="250" min="1" /></div>
+        <div class="form-group"><label>Date</label><input type="date" id="txn-date" /></div>
+        <div class="form-group"><label>Due in (days)</label><input type="number" id="txn-due" placeholder="30" min="1" /></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Items / notes</label><input type="text" id="txn-desc" placeholder="Atta 5kg, sugar 1kg, milk 2L..." /></div>
+      <button class="btn primary" onclick="addTransaction()"><i class="ti ti-device-floppy"></i> Save entry</button>
+    </div>
+  </div>
+
+  <!-- ALERTS TAB -->
+  <div id="tab-alerts" class="section">
+    <div class="section-title">Overdue payments</div>
+    <div id="overdue-list"><div class="empty"><i class="ti ti-circle-check"></i>No overdue payments</div></div>
+    <div style="margin-top:1.5rem">
+      <div class="section-title">Top debtors</div>
+      <div id="top-debtors"></div>
+    </div>
+  </div>
+
+  <!-- SQL TAB -->
+  <div id="tab-sql" class="section">
+    <div class="card">
+      <div class="section-title">SQL console</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px">Tables: <code>customers</code>, <code>transactions</code></p>
+      <textarea class="sql-area" id="sql-input">SELECT c.name, c.phone,
+  SUM(CASE WHEN t.type='credit' THEN t.amount ELSE -t.amount END) AS balance,
+  COUNT(*) AS total_transactions
+FROM customers c
+LEFT JOIN transactions t ON c.id = t.customer_id
+GROUP BY c.id
+ORDER BY balance DESC;</textarea>
+      <div class="pill-row">
+        <button class="btn primary sm" onclick="runSQL()"><i class="ti ti-player-play"></i> Run</button>
+        <button class="btn sm" onclick="setQuery('SELECT * FROM customers;')">customers</button>
+        <button class="btn sm" onclick="setQuery('SELECT * FROM transactions ORDER BY date DESC;')">transactions</button>
+        <button class="btn sm" onclick="setQuery(`SELECT c.name, t.amount, t.type, t.description, t.date, t.due_date\nFROM transactions t\nJOIN customers c ON c.id=t.customer_id\nORDER BY t.date DESC LIMIT 20;`)">recent</button>
+        <button class="btn sm" onclick="setQuery(`SELECT c.name, SUM(CASE WHEN t.type='credit' THEN t.amount ELSE -t.amount END) AS balance\nFROM customers c LEFT JOIN transactions t ON c.id=t.customer_id\nGROUP BY c.id HAVING balance > 0 ORDER BY balance DESC;`)">outstanding</button>
+        <button class="btn sm" onclick="setQuery(`SELECT c.name, t.due_date, t.amount, julianday('now') - julianday(t.due_date) AS days_overdue\nFROM transactions t\nJOIN customers c ON c.id=t.customer_id\nWHERE t.type='credit' AND t.due_date < date('now')\nORDER BY days_overdue DESC;`)">overdue</button>
+      </div>
+      <div class="sql-result" id="sql-result"><span style="color:var(--text2)">Run a query to see results here.</span></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Schema</div>
+      <div class="schema-box">CREATE TABLE customers (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  name      TEXT NOT NULL,
+  phone     TEXT,
+  address   TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE transactions (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  customer_id INTEGER REFERENCES customers(id),
+  type        TEXT CHECK(type IN ('credit','payment')),
+  amount      REAL NOT NULL,
+  description TEXT,
+  date        TEXT,
+  due_date    TEXT,
+  created_at  TEXT DEFAULT CURRENT_TIMESTAMP
+);</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/sql-wasm.js"></script>
+<script>
+let db = null;
+let selectedCustomerId = null;
+let allCustomers = [];
+
+async function initDB() {
+  const SQL = await initSqlJs({
+    locateFile: f => `https://cdn.jsdelivr.net/npm/sql.js@1.10.2/dist/${f}`
+  });
+  db = new SQL.Database();
+  db.run(`
+    CREATE TABLE customers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL, phone TEXT, address TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE transactions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      customer_id INTEGER REFERENCES customers(id),
+      type TEXT CHECK(type IN ('credit','payment')),
+      amount REAL NOT NULL, description TEXT,
+      date TEXT, due_date TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+  seedData();
+  document.getElementById('txn-date').value = today();
+  refreshAll();
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+function daysAgo(n) { const d = new Date(); d.setDate(d.getDate()-n); return d.toISOString().split('T')[0]; }
+
+function seedData() {
+  [
+    ['Ramesh Kumar','9876543210','Gali no. 4, Civil Lines'],
+    ['Sunita Devi','9812345678','Near Shiv Mandir, Sector 7'],
+    ['Mohan Lal','9988776655','Opp. Bus Stand, Model Town'],
+    ['Priya Sharma','9871234567','House 12, Gandhi Nagar'],
+  ].forEach(c => db.run(`INSERT INTO customers (name,phone,address) VALUES (?,?,?)`, c));
+
+  [
+    [1,'credit',450,'Atta 10kg, daal, namak',daysAgo(40),daysAgo(10)],
+    [1,'credit',280,'Soap, shampoo, oil',daysAgo(30),daysAgo(0)],
+    [1,'payment',300,'Partial payment',daysAgo(15),null],
+    [2,'credit',600,'Ghee 1kg, rice 5kg',daysAgo(20),daysAgo(5)],
+    [2,'payment',600,'Full payment',daysAgo(3),null],
+    [3,'credit',1200,'Grocery monthly',daysAgo(35),daysAgo(5)],
+    [3,'credit',350,'Biscuits, chai patti',daysAgo(10),today()],
+    [4,'credit',180,'Vegetables, masala',daysAgo(5),daysAgo(-25)],
+  ].forEach(t => db.run(`INSERT INTO transactions (customer_id,type,amount,description,date,due_date) VALUES (?,?,?,?,?,?)`, t));
+}
+
+function query(sql, params=[]) {
+  const res = db.exec(sql, params);
+  if (!res.length) return [];
+  return res[0].values.map(row => {
+    const obj = {};
+    res[0].columns.forEach((col,i) => obj[col] = row[i]);
+    return obj;
+  });
+}
+function run(sql, params=[]) { db.run(sql, params); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function refreshAll() {
+  refreshStats(); refreshCustomerList(); refreshDropdown(); refreshAlerts();
+}
+
+function refreshStats() {
+  const total = query(`SELECT COALESCE(SUM(CASE WHEN type='credit' THEN amount ELSE -amount END),0) AS v FROM transactions`)[0].v;
+  const custs = query(`SELECT COUNT(DISTINCT customer_id) AS v FROM transactions WHERE type='credit'`)[0].v;
+  const rec = query(`SELECT COALESCE(SUM(amount),0) AS v FROM transactions WHERE type='payment' AND strftime('%Y-%m',date)=strftime('%Y-%m','now')`)[0].v;
+  document.getElementById('stat-total').textContent = '₹' + Math.round(total).toLocaleString('en-IN');
+  document.getElementById('stat-customers').textContent = custs;
+  document.getElementById('stat-recovered').textContent = '₹' + Math.round(rec).toLocaleString('en-IN');
+}
+
+function getBalance(id) {
+  return query(`SELECT COALESCE(SUM(CASE WHEN type='credit' THEN amount ELSE -amount END),0) AS b FROM transactions WHERE customer_id=?`,[id])[0].b;
+}
+
+function initials(name) { return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+
+function refreshCustomerList(filter='') {
+  allCustomers = query(`SELECT * FROM customers ORDER BY name`);
+  const list = document.getElementById('customer-list');
+  const f = filter.toLowerCase();
+  const filtered = allCustomers.filter(c => c.name.toLowerCase().includes(f) || (c.phone||'').includes(filter));
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty"><i class="ti ti-users"></i>No customers found</div>'; return;
+  }
+  list.innerHTML = filtered.map(c => {
+    const bal = getBalance(c.id);
+    const cls = bal > 0 ? 'owed' : 'clear';
+    const label = bal > 0 ? '₹'+Math.round(bal).toLocaleString('en-IN')+' owed' : 'Settled';
+    return `<div class="customer-item ${selectedCustomerId===c.id?'selected':''}" onclick="selectCustomer(${c.id})">
+      <div class="avatar">${initials(c.name)}</div>
+      <div class="cust-info">
+        <div class="cust-name">${c.name}</div>
+        <div class="cust-meta">${c.phone||'No phone'} · ${c.address||'No address'}</div>
+      </div>
+      <span class="balance-badge ${cls}">${label}</span>
+    </div>`;
+  }).join('');
+}
+
+function selectCustomer(id) {
+  selectedCustomerId = id;
+  refreshCustomerList(document.querySelector('.search-bar input').value);
+  const c = allCustomers.find(x=>x.id===id);
+  if (!c) return;
+  const bal = getBalance(id);
+  document.getElementById('detail-avatar').textContent = initials(c.name);
+  document.getElementById('detail-name').textContent = c.name;
+  document.getElementById('detail-phone').textContent = c.phone||'No phone';
+  document.getElementById('detail-addr').textContent = c.address||'';
+  const balEl = document.getElementById('detail-balance');
+  balEl.textContent = bal > 0 ? '₹'+Math.round(bal).toLocaleString('en-IN') : 'Settled';
+  balEl.style.color = bal > 0 ? 'var(--red)' : 'var(--green)';
+  const txns = query(`SELECT * FROM transactions WHERE customer_id=? ORDER BY date DESC`,[id]);
+  const txnList = document.getElementById('txn-list');
+  if (!txns.length) { txnList.innerHTML = '<div class="empty">No transactions yet</div>'; }
+  else {
+    txnList.innerHTML = txns.map(t => `<div class="txn-item ${t.type}">
+      <div class="txn-left">
+        <span class="txn-type ${t.type}">${t.type==='credit'?'Credit':'Payment'}</span>
+        <span class="txn-desc">${t.description||'—'}</span>
+        <span class="txn-date">${t.date}${t.due_date?' · due '+t.due_date:''}</span>
+      </div>
+      <span class="txn-amount ${t.type}">${t.type==='credit'?'−':'+'} ₹${Math.round(t.amount).toLocaleString('en-IN')}</span>
+    </div>`).join('');
+  }
+  document.getElementById('customer-detail').style.display = 'block';
+  document.getElementById('customer-detail').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function quickPayment() {
+  if (!selectedCustomerId) return;
+  const bal = getBalance(selectedCustomerId);
+  if (bal <= 0) { toast('No outstanding balance'); return; }
+  const amt = prompt(`Record payment for ${allCustomers.find(x=>x.id===selectedCustomerId).name}\nOutstanding: ₹${Math.round(bal)}\n\nEnter amount:`);
+  if (!amt || isNaN(parseFloat(amt))) return;
+  run(`INSERT INTO transactions (customer_id,type,amount,description,date) VALUES (?,?,?,?,?)`,[selectedCustomerId,'payment',parseFloat(amt),'Payment received',today()]);
+  toast('Payment recorded');
+  refreshAll();
+  selectCustomer(selectedCustomerId);
+}
+
+function filterCustomers(val) { refreshCustomerList(val); }
+
+function refreshDropdown() {
+  const sel = document.getElementById('txn-customer');
+  const custs = query(`SELECT * FROM customers ORDER BY name`);
+  sel.innerHTML = '<option value="">Select customer</option>' + custs.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+
+function addCustomer() {
+  const name = document.getElementById('new-cust-name').value.trim();
+  const phone = document.getElementById('new-cust-phone').value.trim();
+  const addr = document.getElementById('new-cust-addr').value.trim();
+  if (!name) { alert('Please enter a customer name'); return; }
+  run(`INSERT INTO customers (name,phone,address) VALUES (?,?,?)`,[name,phone,addr]);
+  document.getElementById('new-cust-name').value='';
+  document.getElementById('new-cust-phone').value='';
+  document.getElementById('new-cust-addr').value='';
+  toast(`${name} added`);
+  refreshAll();
+}
+
+function addTransaction() {
+  const custId = document.getElementById('txn-customer').value;
+  const type = document.getElementById('txn-type').value;
+  const amount = parseFloat(document.getElementById('txn-amount').value);
+  const date = document.getElementById('txn-date').value || today();
+  const dueDays = parseInt(document.getElementById('txn-due').value);
+  const desc = document.getElementById('txn-desc').value.trim();
+  if (!custId) { alert('Please select a customer'); return; }
+  if (!amount || amount <= 0) { alert('Please enter a valid amount'); return; }
+  let dueDate = null;
+  if (type==='credit' && dueDays) {
+    const d = new Date(date); d.setDate(d.getDate()+dueDays);
+    dueDate = d.toISOString().split('T')[0];
+  }
+  run(`INSERT INTO transactions (customer_id,type,amount,description,date,due_date) VALUES (?,?,?,?,?,?)`,[custId,type,amount,desc,date,dueDate]);
+  document.getElementById('txn-amount').value='';
+  document.getElementById('txn-desc').value='';
+  toast('Entry saved');
+  refreshAll();
+  if (selectedCustomerId==custId) selectCustomer(selectedCustomerId);
+}
+
+function refreshAlerts() {
+  const overdue = query(`
+    SELECT c.name, c.phone,
+      SUM(CASE WHEN t.type='credit' THEN t.amount ELSE -t.amount END) AS balance,
+      MIN(t.due_date) AS earliest_due
+    FROM customers c
+    JOIN transactions t ON c.id=t.customer_id
+    WHERE t.type='credit' AND t.due_date < date('now')
+    GROUP BY c.id HAVING balance > 0
+    ORDER BY balance DESC
+  `);
+  const div = document.getElementById('overdue-list');
+  if (!overdue.length) {
+    div.innerHTML = '<div class="empty"><i class="ti ti-circle-check"></i>No overdue payments</div>';
+  } else {
+    div.innerHTML = overdue.map(o => {
+      const days = Math.round((new Date()-new Date(o.earliest_due))/86400000);
+      return `<div class="overdue-item">
+        <div>
+          <div class="overdue-name">${o.name}</div>
+          <div class="overdue-days">${days} day${days!==1?'s':''} overdue · ${o.phone||'no phone'}</div>
+        </div>
+        <div class="overdue-amt">₹${Math.round(o.balance).toLocaleString('en-IN')}</div>
+      </div>`;
+    }).join('');
+  }
+  const top = query(`
+    SELECT c.name, SUM(CASE WHEN t.type='credit' THEN t.amount ELSE -t.amount END) AS balance
+    FROM customers c LEFT JOIN transactions t ON c.id=t.customer_id
+    GROUP BY c.id HAVING balance > 0 ORDER BY balance DESC LIMIT 5
+  `);
+  const topDiv = document.getElementById('top-debtors');
+  if (!top.length) { topDiv.innerHTML='<div class="empty">No outstanding balances</div>'; return; }
+  topDiv.innerHTML = top.map((d,i)=>`<div class="txn-item" style="margin-bottom:6px">
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:13px;color:var(--text2);min-width:16px;font-weight:600">${i+1}</span>
+      <span style="font-size:14px;font-weight:500">${d.name}</span>
+    </div>
+    <span style="font-size:15px;font-weight:600;color:var(--red)">₹${Math.round(d.balance).toLocaleString('en-IN')}</span>
+  </div>`).join('');
+}
+
+function runSQL() {
+  const sql = document.getElementById('sql-input').value.trim();
+  const out = document.getElementById('sql-result');
+  if (!sql) return;
+  try {
+    const res = db.exec(sql);
+    if (!res.length) {
+      out.innerHTML = '<span style="color:var(--green)">✓ Query executed. No rows returned.</span>';
+      refreshAll(); return;
+    }
+    const cols = res[0].columns;
+    const rows = res[0].values;
+    out.innerHTML = `<table><thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${
+      rows.map(r=>`<tr>${r.map(v=>`<td>${v===null?'<span style="color:var(--text3)">NULL</span>':v}</td>`).join('')}</tr>`).join('')
+    }</tbody></table><div style="font-size:11px;color:var(--text3);margin-top:6px">${rows.length} row${rows.length!==1?'s':''}</div>`;
+    refreshAll();
+  } catch(e) {
+    out.innerHTML = `<span style="color:var(--red)">Error: ${e.message}</span>`;
+  }
+}
+
+function setQuery(q) { document.getElementById('sql-input').value=q; runSQL(); }
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey||e.metaKey) && e.key==='Enter' && document.getElementById('sql-input')===document.activeElement) {
+    e.preventDefault(); runSQL();
+  }
+});
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['customers','add-txn','alerts','sql'][i]===name));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+initDB();
+</script>
+</body>
+</html>
